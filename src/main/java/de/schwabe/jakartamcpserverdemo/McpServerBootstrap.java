@@ -11,6 +11,7 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.annotation.WebListener;
+import reactor.core.scheduler.Schedulers;
 
 @WebListener
 public class McpServerBootstrap implements ServletContextListener {
@@ -38,6 +39,10 @@ public class McpServerBootstrap implements ServletContextListener {
                 .build();
 
         ServletRegistration.Dynamic registration = event.getServletContext().addServlet("mcpServlet", transport);
+        if (registration == null) {
+            mcpServer.closeGracefully();
+            throw new IllegalStateException("Servlet 'mcpServlet' is already registered");
+        }
         registration.setAsyncSupported(true);
         registration.setLoadOnStartup(1);
         registration.addMapping(MCP_ENDPOINT);
@@ -45,8 +50,12 @@ public class McpServerBootstrap implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
-        if (mcpServer != null) {
-            mcpServer.closeGracefully();
+        try {
+            if (mcpServer != null) {
+                mcpServer.closeGracefully();
+            }
+        } finally {
+            Schedulers.shutdownNow();
         }
     }
 }

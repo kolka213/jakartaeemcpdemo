@@ -73,11 +73,11 @@ public class PersonTools {
     }
 
     private static CallToolResult text(String text) {
-        return CallToolResult.builder().content(List.of(new TextContent(text))).build();
+        return CallToolResult.builder().content(List.of(TextContent.builder(text).build())).build();
     }
 
     private static CallToolResult error(String message) {
-        return CallToolResult.builder().content(List.of(new TextContent(message))).isError(true).build();
+        return CallToolResult.builder().content(List.of(TextContent.builder(message).build())).isError(true).build();
     }
 
     /** Accepts integral numbers only (also 1.0), rejects 1.5, strings, null and anything else. */
