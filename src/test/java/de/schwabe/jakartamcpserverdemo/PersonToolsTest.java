@@ -152,7 +152,24 @@ class PersonToolsTest {
             assertTrue(result.isError(), "arguments=" + arguments);
             assertEquals("Argument 'id' is required and must be an integer", textOf(result));
         }
-        assertTrue(tools.getPersonById(null, request("get_person_by_id", null)).isError());
+        CallToolResult nullArguments = tools.getPersonById(null, request("get_person_by_id", null));
+        assertTrue(nullArguments.isError());
+        assertEquals("Argument 'id' is required and must be an integer", textOf(nullArguments));
+    }
+
+    @Test
+    void getPersonByIdSchemaRequiresIntegerId() {
+        SyncToolSpecification spec = tools().specifications().stream()
+                .filter(s -> s.tool().name().equals("get_person_by_id"))
+                .findFirst()
+                .orElseThrow();
+        Map<String, Object> schema = spec.tool().inputSchema();
+
+        assertEquals("object", schema.get("type"));
+        assertEquals(List.of("id"), schema.get("required"));
+        Map<?, ?> properties = (Map<?, ?>) schema.get("properties");
+        Map<?, ?> idSchema = (Map<?, ?>) properties.get("id");
+        assertEquals("integer", idSchema.get("type"));
     }
 
     @Test
